@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitor Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: rgba(22, 27, 34, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-cyan: #00f2ff;
+            --accent-purple: #bc13fe;
+            --accent-green: #39ff14;
+            --accent-orange: #ff9900;
+            --text-main: #e6edf3;
+            --text-dim: #8b949e;
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(188, 19, 254, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            color: var(--accent-green);
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Accent variants */
+        .cyan-text {
+            color: var(--accent-cyan);
+        }
+
+        .purple-text {
+            color: var(--accent-purple);
+        }
+
+        .green-text {
+            color: var(--accent-green);
+        }
+
+        .orange-text {
+            color: var(--accent-orange);
+        }
+
+        .bg-cyan {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .bg-purple {
+            background: var(--accent-purple);
+            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+        }
+
+        .bg-green {
+            background: var(--accent-green);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+        }
+
+        .bg-orange {
+            background: var(--accent-orange);
+            box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
+        }
+
+        .chart-container {
+            height: 60px;
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px 2px 0 0;
+            transition: height 0.5s ease;
+        }
+
+        .process-list {
+            grid-column: span 2;
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .process-list {
+                grid-column: span 1;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .trend-up {
+            color: #ff4d4d;
+        }
+
+        .trend-down {
+            color: #2ecc71;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating-glow {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
+            opacity: 0.1;
+            top: -75px;
+            right: -75px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon"></div>
+            SYS<span>MON</span>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            SYSTEM OPERATIONAL
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- CPU Card -->
+        <div class="card">
+            <div class="floating-glow"
+                style="background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);"></div>
+            <div class="card-header">
+                <div class="card-title">CPU Load</div>
+                <div class="cyan-text">▲ 2.4%</div>
+            </div>
+            <div class="card-value cyan-text"><span id="cpu-val">24</span>%</div>
+            <div class="progress-container">
+                <div id="cpu-bar" class="progress-bar bg-cyan" style="width: 24%;"></div>
+            </div>
+            <div class="chart-container" id="cpu-chart"></div>
+        </div>
+
+        <!-- RAM Card -->
+        <div class="card">
+            <div class="floating-glow"
+                style="background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);"></div>
+            <div class="card-header">
+                <div class="card-title">Memory Usage</div>
+                <div class="purple-text">Stable</div>
+            </div>
+            <div class="card-value purple-text"><span id="ram-val">62</span>%</div>
+            <div class="progress-container">
+                <div id="ram-bar" class="progress-bar bg-purple" style="width: 62%;"></div>
+            </div>
+            <div class="chart-container" id="ram-chart"></div>
+        </div>
+
+        <!-- Network Card -->
+        <div class="card">
+            <div class="floating-glow"
+                style="background: radial-gradient(circle, var(--accent-orange) 0%, transparent 70%);"></div>
+            <div class="card-header">
+                <div class="card-title">Network Traffic</div>
+                <div class="orange-text">Active</div>
+            </div>
+            <div class="card-value orange-text"><span id="net-val">1.2</span><small style="font-size: 1rem;">
+                    Gbps</small></div>
+            <div class="chart-container" id="net-chart"></div>
+        </div>
+
+        <!-- Disk Card -->
+        <div class="card">
+            <div class="floating-glow"
+                style="background: radial-gradient(circle, var(--accent-green) 0%, transparent 70%);"></div>
+            <div class="card-header">
+                <div class="card-title">Storage Space</div>
+                <div class="green-text">Normal</div>
+            </div>
+            <div class="card-value green-text"><span id="disk-val">45</span>%</div>
+            <div class="progress-container">
+                <div id="disk-bar" class="progress-bar bg-green" style="width: 45%;"></div>
+            </div>
+            <div class="chart-container" id="disk-chart"></div>
+        </div>
+
+        <!-- Process List -->
+        <div class="process-list card">
+            <div class="card-title" style="margin-bottom: 1rem;">Active Processes</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PROCESS NAME</th>
+                        <th>PID</th>
+                        <th>CPU %</th>
+                        <th>MEMORY</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="process-tbody">
+                    <tr>
+                        <td>system_kernel</td>
+                        <td>0</td>
+                        <td>1.2%</td>
+                        <td>512MB</td>
+                        <td class="green-text">Running</td>
+                    </tr>
+                    <tr>
+                        <td>v8_engine_runtime</td>
+                        <td>4521</td>
+                        <td>8.5%</td>
+                        <td>2.4GB</td>
+                        <td class="green-text">Running</td>
+                    </tr>
+                    <tr>
+                        <td>fs_monitor_service</td>
+                        <td>1289</td>
+                        <td>0.4%</td>
+                        <td>128MB</td>
+                        <td class="cyan-text">Idle</td>
+                    </tr>
+                    <tr>
+                        <td>network_agent</td>
+                        <td>992</td>
+                        <td>2.1%</td>
+                        <td>45MB</td>
+                        <td class="green-text">Running</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Logs / Terminal Mini -->
+        <div class="card"
+            style="background: #000; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; height: 100%;">
+            <div class="card-title" style="margin-bottom: 1rem; color: #fff;">System Logs</div>
+            <div id="log-content" style="color: #00ff00; line-height: 1.5; opacity: 0.8;">
+                [12:07:44] Kernel initialized.<br>
+                [12:07:45] Starting network subsystem...<br>
+                [12:08:12] User connected via SSH.<br>
+                [12:09:01] Periodic backup started.<br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulation Data Helpers
+        function randomFloat(min, max) {
+            return (Math.random() * (max - min) + min).toFixed(1);
+        }
+
+        function createChartBars(containerId, count, color) {
+            const container = document.getElementById(containerId);
+            for (let i = 0; i < count; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = (Math.random() * 100) + '%';
+                bar.style.backgroundColor = color;
+                bar.style.opacity = (i / count);
+                container.appendChild(bar);
+            }
+        }
+
+        function updateChart(containerId) {
+            const container = document.getElementById(containerId);
+            const bars = container.querySelectorAll('.chart-bar');
+            bars.forEach((bar, index) => {
+                if (index < bars.length - 1) {
+                    bar.style.height = bars[index + 1].style.height;
+                } else {
+                    bar.style.height = (Math.random() * 100) + '%';
+                }
+            });
+        }
+
+        // Initialize Charts
+        createChartBars('cpu-chart', 20, 'var(--accent-cyan)');
+        createChartBars('ram-chart', 20, 'var(--accent-purple)');
+        createChartBars('net-chart', 20, 'var(--accent-orange)');
+        createChartBars('disk-chart', 20, 'var(--accent-green)');
+
+        // Real-time Update Loop
+        setInterval(() => {
+            // Update CPU
+            const cpu = randomFloat(15, 65);
+            document.getElementById('cpu-val').innerText = cpu;
+            document.getElementById('cpu-bar').style.width = cpu + '%';
+            updateChart('cpu-chart');
+
+            // Update RAM
+            const ram = randomFloat(58, 64);
+            document.getElementById('ram-val').innerText = ram;
+            document.getElementById('ram-bar').style.width = ram + '%';
+            updateChart('ram-chart');
+
+            // Update Net
+            const net = randomFloat(0.5, 4.5);
+            document.getElementById('net-val').innerText = net;
+            updateChart('net-chart');
+
+            // Update Disk (Slowly)
+            if (Math.random() > 0.95) {
+                const disk = randomFloat(44, 46);
+                document.getElementById('disk-val').innerText = disk;
+                document.getElementById('disk-bar').style.width = disk + '%';
+            }
+            updateChart('disk-chart');
+
+            // Logs
+            if (Math.random() > 0.8) {
+                const logs = document.getElementById('log-content');
+                const now = new Date().toLocaleTimeString();
+                const logMsgs = [
+                    "Security check passed.",
+                    "Memory cleanup executed.",
+                    "Incoming packet filtered.",
+                    "Heartbeat signal sent.",
+                    "Database optimization complete."
+                ];
+                const newMsg = `[${now}] ${logMsgs[Math.floor(Math.random() * logMsgs.length)]}<br>`;
+                logs.innerHTML += newMsg;
+                if (logs.scrollHeight > 150) {
+                    logs.innerHTML = logs.innerHTML.split('<br>').slice(-8).join('<br>');
+                }
+            }
+        }, 1500);
+
+        // Process CPU simulation
+        setInterval(() => {
+            const rows = document.querySelectorAll('#process-tbody tr');
+            rows.forEach(row => {
+                const cpuCell = row.cells[2];
+                const current = parseFloat(cpuCell.innerText);
+                const noise = (Math.random() - 0.5) * 2;
+                cpuCell.innerText = Math.max(0.1, (current + noise)).toFixed(1) + '%';
+            });
+        }, 2000);
+    </script>
+</body>
+
+</html>
