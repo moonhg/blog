@@ -22,6 +22,84 @@
             --glass-blur: blur(12px);
         }
 
+        /* Splash Modal Styles */
+        #splash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .splash-content {
+            text-align: center;
+            max-width: 600px;
+            animation: zoomIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .splash-image {
+            width: 400px;
+            height: 400px;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 242, 255, 0.2);
+            border: 2px solid var(--border-color);
+            object-fit: cover;
+        }
+
+        .splash-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .enter-btn {
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .enter-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+        }
+
+        #splash-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -301,6 +379,16 @@
         </div>
     </header>
 
+    <!-- Splash Modal -->
+    <div id="splash-overlay">
+        <div class="splash-content">
+            <img src="splash.png" alt="Vibe Coding" class="splash-image">
+            <h1 class="splash-title">Ready for Vibe Coding?</h1>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">Welcome to the next generation system monitor.</p>
+            <button class="enter-btn" onclick="closeSplash()">ENTER DASHBOARD</button>
+        </div>
+    </div>
+
     <div class="dashboard-grid">
         <!-- CPU Card -->
         <div class="card">
@@ -511,6 +599,11 @@
                 cpuCell.innerText = Math.max(0.1, (current + noise)).toFixed(1) + '%';
             });
         }, 2000);
+
+        // Modal Logic
+        function closeSplash() {
+            document.getElementById('splash-overlay').classList.add('hidden');
+        }
     </script>
 </body>
 
